@@ -7,8 +7,12 @@ HEIGHT = 50 * UNITE
 WIDTH_VOIE = 10 * UNITE
 SPACE_SIZE = 20
 VT = 5
-VG = VT*100
+VG = VT*150
 
+colors = ['cyan', 'red',
+              '#ffd700',
+              'magenta',
+              'violet']
 list_car = []
 dic_car = {0: [], 1: [], 2: [], 3: []}
 dic_cpe = {0: [], 1: [], 2: [], 3: []}
@@ -17,6 +21,9 @@ dic_prio = {0: 1, 1: 2, 2: 3, 3: 0}
 list_cpe = []
 list_cpa = set()
 list_cpr = []
+list_stats= [True, True, True, True]
+state = False
+mode = True
 
 
 class Voie:
@@ -27,19 +34,32 @@ class Voie:
       self.voie = canvas.create_rectangle(0, (HEIGHT + WIDTH_VOIE) / 2, WIDTH + 4, (HEIGHT - WIDTH_VOIE) / 2,
                                           fill="black")
 
-      entree1 = 0, (HEIGHT + WIDTH_VOIE / 2) / 2
 
+      self.vf1 = canvas.create_rectangle(0, (HEIGHT + WIDTH_VOIE ) / 2,
+                                        8, HEIGHT/2, fill="black", outline="black")
+      self.vf2 = canvas.create_rectangle(WIDTH, (HEIGHT - WIDTH_VOIE) / 2,
+                                         WIDTH-8, HEIGHT / 2, fill="black", outline="black")
+
+      entree1 = 0, (HEIGHT + WIDTH_VOIE / 2) / 2
       sortie1 = WIDTH, (HEIGHT + WIDTH_VOIE / 2) / 2
 
       self.pe1 = WIDTH / 2 - WIDTH_VOIE, (HEIGHT + WIDTH_VOIE / 2) / 2
       self.pa1 = WIDTH / 2 - WIDTH_VOIE / 2, (HEIGHT + WIDTH_VOIE / 2) / 2
+      self.vp1 = canvas.create_rectangle((WIDTH - WIDTH_VOIE) / 2 - 15, (HEIGHT + WIDTH_VOIE ) / 2,
+                                        (WIDTH - WIDTH_VOIE) / 2, (HEIGHT + WIDTH_VOIE ) / 2 + 8, fill="black",
+                                         outline="red")
       self.ps1 = WIDTH / 2 + WIDTH_VOIE / 2, (HEIGHT + WIDTH_VOIE / 2) / 2
 
       entree2 = WIDTH, (HEIGHT - WIDTH_VOIE / 2) / 2
+
+
       sortie2 = 0, (HEIGHT - WIDTH_VOIE / 2) / 2
 
       self.pe2 = WIDTH / 2 + WIDTH_VOIE, (HEIGHT - WIDTH_VOIE / 2) / 2
       self.pa2 = WIDTH / 2 + WIDTH_VOIE / 2, (HEIGHT - WIDTH_VOIE / 2) / 2
+      self.vp2 = canvas.create_rectangle((WIDTH + WIDTH_VOIE) / 2 + 15, (HEIGHT - WIDTH_VOIE) / 2,
+                                         (WIDTH + WIDTH_VOIE) / 2, (HEIGHT - WIDTH_VOIE) / 2 - 8, fill="black",
+                                         outline="red")
       self.ps2 = WIDTH / 2 - WIDTH_VOIE / 2, (HEIGHT - WIDTH_VOIE / 2) / 2
 
       self.entree = (entree1, entree2)
@@ -48,18 +68,32 @@ class Voie:
     else:
       self.voie = canvas.create_rectangle((WIDTH - WIDTH_VOIE) / 2, 0, (WIDTH + WIDTH_VOIE) / 2, HEIGHT + 4,
                                           fill="black")
+
+      self.vf1 = canvas.create_rectangle((WIDTH + WIDTH_VOIE) / 2,HEIGHT,
+                                         WIDTH / 2, HEIGHT-8, fill="black", outline="black")
+      self.vf2 = canvas.create_rectangle((WIDTH - WIDTH_VOIE) / 2, 0,
+                                         WIDTH / 2, 8, fill="black", outline="black")
+
       entree1 = (WIDTH + WIDTH_VOIE / 2) / 2, HEIGHT
       sortie1 = (WIDTH + WIDTH_VOIE / 2) / 2, 0
 
       self.pe1 = (WIDTH + WIDTH_VOIE / 2) / 2, HEIGHT / 2 + WIDTH_VOIE
       self.pa1 = (WIDTH + WIDTH_VOIE / 2) / 2, HEIGHT / 2 + WIDTH_VOIE / 2
+      self.vp1 = canvas.create_rectangle((WIDTH + WIDTH_VOIE) / 2 + 8, (HEIGHT + WIDTH_VOIE) / 2+1,
+                                         (WIDTH + WIDTH_VOIE) / 2 , (HEIGHT + WIDTH_VOIE) / 2 + 16, fill="black",
+                                         outline="red")
       self.ps1 = (WIDTH + WIDTH_VOIE / 2) / 2, HEIGHT / 2 - WIDTH_VOIE / 2
 
       entree2 = (WIDTH - WIDTH_VOIE / 2) / 2, 0
       sortie2 = (WIDTH - WIDTH_VOIE / 2) / 2, HEIGHT
 
+
+
       self.pe2 = (WIDTH - WIDTH_VOIE / 2) / 2, HEIGHT / 2 - WIDTH_VOIE
       self.pa2 = (WIDTH - WIDTH_VOIE / 2) / 2, HEIGHT / 2 - WIDTH_VOIE / 2
+      self.vp2 = canvas.create_rectangle((HEIGHT - WIDTH_VOIE) / 2 - 8, (WIDTH - WIDTH_VOIE) / 2 -1,
+                                         (HEIGHT - WIDTH_VOIE) / 2, (WIDTH - WIDTH_VOIE) / 2 - 16, fill="black",
+                                         outline="red")
       self.ps2 = (WIDTH - WIDTH_VOIE / 2) / 2, HEIGHT / 2 + WIDTH_VOIE / 2
 
       self.entree = (entree1, entree2)
@@ -159,27 +193,44 @@ class Car:
     return arrive
 
 def genereV():
-  colors = ['green', 'yellow', 'red',
-            'purple', 'orange', 'pink', 'brown',
-            'white', 'cyan', 'magenta',
-            'violet', 'indigo', 'turquoise', '#ffd700', '#c0c0c0', '#cd7f32', '#e5e4e2']
+  if state:
+    mul= 1
+    ve = [i for i in range(4) if list_stats[i]]
+    if len(ve) > 0:
+      if mode:
+        depart = random.choice(ve)
+        color = colors[depart]#random.choice(colors)
 
-  color = random.choice(colors)
-  depart = random.randint(0, 3)
-
-  if depart == 0:
-    arrivee = random.choice([0, 1, 3])
-  elif depart == 1:
-    arrivee = random.choice([0, 1, 2])
-  elif depart == 2:
-    arrivee = random.choice([1, 2, 3])
-  else:
-    arrivee = random.choice([0, 2, 3])
-  if len(dic_car[depart]) <= 10:
-    car = Car(depart, arrivee, color)
-    dic_car[depart].append(car)
-    list_car.append(car)
-  window.after(VG, genereV)
+        if depart == 0:
+          arrivee = random.choice([0, 1, 3])
+        elif depart == 1:
+          arrivee = random.choice([0, 1, 2])
+        elif depart == 2:
+          arrivee = random.choice([1, 2, 3])
+        else:
+          arrivee = random.choice([0, 2, 3])
+        if len(dic_car[depart]) < 10:
+          car = Car(depart, arrivee, color)
+          dic_car[depart].append(car)
+          list_car.append(car)
+      else:
+        for i in ve:
+          color = colors[i]#random.choice(colors)
+          depart = i
+          if depart == 0:
+            arrivee = random.choice([0, 1, 3])
+          elif depart == 1:
+            arrivee = random.choice([0, 1, 2])
+          elif depart == 2:
+            arrivee = random.choice([1, 2, 3])
+          else:
+            arrivee = random.choice([0, 2, 3])
+          if len(dic_car[depart]) < 10:
+            car = Car(depart, arrivee, color)
+            dic_car[depart].append(car)
+            list_car.append(car)
+          mul=len(ve)
+    window.after(VG*mul, genereV)
 
 def compareNext(car1):
   for car2 in list_cpa:
@@ -190,12 +241,12 @@ def compareNext(car1):
 
 def priority(car):
   if len(list_cpr) > 0:
-    if len(dic_cpr[car.ne]) > 0:
+    if len(dic_cpr[car.ne]) > 0:# and len(dic_cpe[dic_prio[car.ne]]) == 0:
       return True
     else:
       return False
   elif len(dic_cpe[dic_prio[car.ne]]) > 0:
-    pp = False
+    pp = False   # Arrivees simultanees
     if (car.ne == 0):
       for i in dic_cpe.values():
         pp = pp or len(i) == 0
@@ -205,23 +256,31 @@ def priority(car):
 
 def traffik():
   # print(len(listCar))
-  for car in list_car:
-    arrive = False
-    if compareNext(car) != True:
-      if car.pa:
-        list_cpa.add(car)
-        if priority(car):
-          list_cpr.append(car)
-          list_cpa.remove(car)
-          dic_cpr[car.ne].append(car)
+  if state:
+    for car in list_car:
+      arrive = False
+      if compareNext(car) != True:
+        if car.pa:
+          list_cpa.add(car)
+          if priority(car):
+            list_cpr.append(car)
+            list_cpa.remove(car)
+            dic_cpr[car.ne].append(car)
+            canvas.itemconfig(list_vp[car.ne], fill="#50ff20")
+            arrive = car.drive()
+          else:
+            canvas.itemconfig(list_vp[car.ne], fill="red")
+        else:
+          if len(dic_cpe[car.ne]) <= 0:
+              canvas.itemconfig(list_vp[car.ne], fill="orange" if list_stats[car.ne] else "black",
+                                outline="black" if list_stats[car.ne] else "red")
+          else:
+            pass
+            # canvas.itemconfig(list_vp[car.ne], fill="red")
           arrive = car.drive()
-
-      else:
-        arrive = car.drive()
-      if arrive:
-        list_car.remove(car)
-
-  window.after(VT, traffik)
+        if arrive:
+          list_car.remove(car)
+    window.after(VT, traffik)
 
 
 if __name__ == "__main__":
@@ -240,6 +299,7 @@ if __name__ == "__main__":
                  voieh.entree[0],
                  voiew.entree[1],
                  voieh.entree[1]]
+
   list_sortie = [voiew.sortie[0],
                  voieh.sortie[0],
                  voiew.sortie[1],
@@ -249,11 +309,54 @@ if __name__ == "__main__":
   list_pa = [voiew.pa1, voieh.pa1, voiew.pa2, voieh.pa2]
   list_ps = [voiew.ps1, voieh.ps1, voiew.ps2, voieh.ps2]
 
+  list_vf = [voiew.vf1, voieh.vf1, voiew.vf2, voieh.vf2]
+  list_vp = [voiew.vp1, voieh.vp1, voiew.vp2, voieh.vp2]
+
   genereV()
   traffik()
 
   canvas.pack()
 
+  def changeStats(ne):
+    list_stats[ne] = not list_stats[ne]
+    canvas.itemconfig(list_vf[ne], fill="black" if list_stats[ne] else "red",
+                      outline="black" if list_stats[ne] else "red")
+
+  def changeStat():
+    global state
+    state = not state
+    bStart.config(text= "Arreter" if state else "Demarrer", background="red" if state else "yellow")
+    if state:
+      window.after(VG, genereV)
+      traffik()
+
+  def changeMode():
+    global mode
+    mode = not mode
+    bMode.config(text= "Tous" if mode else "Par 1")
+
+  frame = Frame(canvas, width=150, height=100, background="green", border=0)
+  bStart = Button(frame, text="Demarrer"
+                  , background="yellow", border=1, width=8, command=lambda: changeStat())
+
+  window.bind("<space>", lambda e: changeStat())
+  bStart.grid(row=0, column=0, padx=10, pady=10)
+  bMode = Button(frame, text="Tous", background="orange", border=1,width=8, command=lambda: changeMode())
+  bMode.grid(row=0, column=1, padx=10, pady=10)
+  cv1 = Checkbutton(frame, text="Voie 1", background="green", command=lambda: changeStats(0))
+  cv1.select()
+  cv1.grid(row=1, column=0, padx=5, pady=10)
+  cv2 = Checkbutton(frame, text="Voie 2", background="green", command=lambda: changeStats(1))
+  cv2.select()
+  cv2.grid(row=2, column=0, padx=5, pady=10)
+  cv3 = Checkbutton(frame, text="Voie 3", background="green", command=lambda: changeStats(2))
+  cv3.select()
+  cv3.grid(row=1, column=1, padx=5, pady=10)
+  cv4 = Checkbutton(frame, text="Voie 4", background="green", command=lambda: changeStats(3))
+  cv4.select()
+  cv4.grid(row=2, column=1, padx=5, pady=10)
+
+  canvas.create_window(20, 10, window=frame, anchor='nw')
   window.update()
 
   window_width = window.winfo_width()
