@@ -44,8 +44,9 @@ class Train:
           self.coord.remove(self.coord[-1])
         for i in range(0,len(self.coord), 1): #self.voie[self.position - taille: self.position]:
           if i%12 ==0 :
+            couleur = ['orange', '#bf2faf'][self.nv] if i%24 == 0 else 'yellow'
             w = canvas.create_oval(self.coord[i][0]-7, self.coord[i][1]-7,
-                                   self.coord[i][0] + 7, self.coord[i][1] + 7, fill='yellow')
+                                   self.coord[i][0] + 7, self.coord[i][1] + 7, fill=couleur)
             self.wagons.append(w)
 
         self.position += 1
@@ -53,24 +54,29 @@ class Train:
       arrive = True
     return arrive
 
-def genTrain():
-  nv = random.randint(0,1)
-  if len(dict_entree[nv]) <= 0:
+def genTrain(nv=3):
+  attente=1000
+  if nv == 3:
+    nv = random.randint(0,1)
+  if len(dict_entree[nv]) <= 0 :#and len(dict_pass[nv]) <= 0:
+    if len(dict_train[nv]) >= 3 : nv = (nv+1)%2
     train = Train(nv, 5)
     list_train.append(train)
     dict_train[nv].append(train)
     dict_entree[nv].append(train)
-  window.after(2000, genTrain)
+  # window.after(attente, genTrain)
 
 def traffik():
-  arrive = False
+  # print(len(list_train))
   for i in list_train:
+    arrive = False
     if i.is_pe:
       if len(list_pass)> 0 and len(dict_pass[i.nv]) > 0 or len(list_pass)== 0:
         arrive = i.drive()
         list_pass.append(i)
         dict_pass[i.nv].append(i)
         dict_entree[i.nv].remove(i)
+        genTrain()
 
     else:
       arrive = i.drive()
@@ -212,12 +218,12 @@ if __name__ == "__main__":
 
 
 
-  frame = Frame(canvas, width=150, height=100, background="green", border=0)
-  bStart = Button(frame, text="Demarrer"
-                  , background="yellow", border=1, width=8)
-  bStart.grid(row=0, column=0, padx=10, pady=10)
-
-  canvas.create_window(20, 10, window=frame, anchor='nw')
+  # frame = Frame(canvas, width=150, height=100, background="green", border=0)
+  # bStart = Button(frame, text="Demarrer"
+  #                 , background="yellow", border=1, width=8)
+  # bStart.grid(row=0, column=0, padx=10, pady=10)
+  #
+  # canvas.create_window(20, 10, window=frame, anchor='nw')
   window.update()
 
   # window_width = window.winfo_width()
